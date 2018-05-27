@@ -1,0 +1,52 @@
+@CHARSET "UTF-8";
+
+.skin-1 {
+    background-color: #4a4f56;
+}
+.main-content {
+    min-height: 100%;
+    padding: 0;
+    margin-left: 190px;
+}
+
+.skin-1 .sidebar {
+    background-color: #222a2d;
+    border-right-width: 0;
+}
+
+.main-container {
+	margin: 0;
+	padding: 0;
+}
+
+.arrow {
+    display: block;
+    width: 14px !important;
+    height: 14px;
+    line-height: 14px;
+    text-shadow: none;
+    font-size: 18px;
+    position: absolute;
+    right: 10px;
+    top: 12px;
+    padding: 0;
+    text-align: center;
+}
+
+.fa {
+    display: inline-block;
+    font: normal normal normal 14px/1 FontAwesome;
+    font-size: inherit;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.fa-angle-down:before {
+  content: "\f107";
+}
+
+.onsubmenu {
+	background-color:#28b779;
+	font:#fff;
+}

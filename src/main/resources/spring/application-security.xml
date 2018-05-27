@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p" xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:tx="http://www.springframework.org/schema/tx" xmlns:jpa="http://www.springframework.org/schema/data/jpa" xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:security="http://www.springframework.org/schema/security"
+    xsi:schemaLocation="
+        http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/data/jpa 
+        http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
+		http://www.springframework.org/schema/tx 
+		http://www.springframework.org/schema/tx/spring-tx.xsd
+        http://www.springframework.org/schema/mvc 
+        http://www.springframework.org/schema/mvc/spring-mvc.xsd
+        http://www.springframework.org/schema/security
+        http://www.springframework.org/schema/security/spring-security.xsd ">
+        
+    <!-- 定义上下文返回的消息的国际化。 -->
+    <bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+        <property name="defaultEncoding" value="UTF-8" />  
+        <property name="useCodeAsDefaultMessage" value="true" />  
+        <property name="cacheSeconds" value="10"></property>  
+        <property name="basenames">  
+            <list>   
+            	<value>classpath:ck_messages</value>
+                <value>classpath:org/springframework/security/messages_zh_CN</value>
+            </list>  
+        </property> 
+    </bean>
+
+	<!-- 取消对静态文件的处理 -->
+	<security:http pattern="/css/**" security="none" />
+	<security:http pattern="/js/**" security="none" />
+	<security:http pattern="/images/**" security="none" />
+	<security:http pattern="/lib/**" security="none" />
+	<security:http pattern="/img/**" security="none" />
+	<!-- <security:http pattern="/html/**" security="none" /> -->
+	<security:http pattern="/font-awesome/**" security="none" />
+	
+	<!-- 对方法的安全拦截 -->
+	<security:global-method-security jsr250-annotations="enabled" secured-annotations="enabled" />
+	
+<!--     <security:http auto-config="true">
+        自定义登录, 登录失败后跳转到登录页面
+        <security:form-login login-page="/login" login-processing-url="/loginPost" authentication-success-handler-ref="successHandler" authentication-failure-url="/loginFailure"
+            username-parameter="loginName" password-parameter="loginPassword"/>
+        登出后，删掉cookie， 并跳转到首页
+        <security:logout delete-cookies="JSESSIONID" invalidate-session="false" logout-url="/logout" success-handler-ref="logoutSuccessHandler" />
+
+		<security:intercept-url pattern="/ck/**" access="ROLE_USER" />
+		 
+        <security:session-management>
+            <security:concurrency-control max-sessions="1" />
+        </security:session-management>
+
+        需要进行权限拦截的uri
+      	<security:csrf/>
+       	<security:csrf request-matcher-ref="csrfSecurityRequestMatcher" disabled="false"/> 
+        <security:request-cache ref="alwaysSaveRequestCache"/>
+    </security:http> -->
+       
+    <security:http auto-config="false" entry-point-ref="authenticationEntryPoint">
+    	<security:headers>
+        	<security:frame-options policy="SAMEORIGIN"/>
+    	</security:headers>
+   		<!-- 登录过滤器 -->
+        <security:custom-filter before="FORM_LOGIN_FILTER" ref="loginFilter"/>       
+        <!-- 只cache get,避免ajax post 被cache -->
+        <security:request-cache ref="alwaysSaveRequestCache"/>
+        <!-- 注销过滤器 -->
+        <security:logout delete-cookies="JSESSIONID" invalidate-session="false" logout-url="/logout" success-handler-ref="logoutSuccessHandler" />
+        <!-- remember me -->
+        <security:remember-me key="bookingtest" />
+        <!-- <security:csrf request-matcher-ref="csrfSecurityRequestMatcher"/> -->
+        <security:custom-filter ref="securityFilter" before="FILTER_SECURITY_INTERCEPTOR" />
+        <security:csrf disabled="true"/>
+    </security:http>
+    
+    <bean id="authenticationEntryPoint" class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
+        <constructor-arg value="/login" />
+    </bean>
+    
+    <!-- 验证普通用户 -->  
+    <bean id="loginFilter" class="com.tonggu.security.CustomUsernamePasswordAuthenticationFilter">
+        <property name="authenticationManager" ref="authenticationManager"/>
+        <property name="authenticationFailureHandler" ref="failureHandler"/>
+        <property name="authenticationSuccessHandler" ref="successHandler"/>
+        <property name="filterProcessesUrl" value="/loginPost"/>
+        <property name="usernameParameter" value="loginName" />
+        <property name="passwordParameter" value="loginPassword"/>
+    </bean>
+    
+    <bean id="securityFilter" class="org.springframework.security.web.access.intercept.FilterSecurityInterceptor">
+		<property name="authenticationManager" ref="authenticationManager" />
+		<property name="accessDecisionManager" ref="accessDecisionManager" />
+		<property name="securityMetadataSource" ref="slSecurityMetadataSource" />
+	</bean>
+	
+    <bean id="webVoter" class="com.tonggu.security.WebAccessDecisionVoter"/>
+    <bean id="slSecurityMetadataSource" class="com.tonggu.security.WebInvocationSecurityMetadataSourceService"></bean>
+    <bean id="accessDecisionManager" class="org.springframework.security.access.vote.AffirmativeBased">
+	  <constructor-arg>
+	    <list>
+	      <ref bean="webVoter" />
+	      <bean class="org.springframework.security.access.vote.RoleVoter" />
+	      <bean class="org.springframework.security.access.vote.AuthenticatedVoter" />
+	    </list>
+	  </constructor-arg>
+	</bean>
+    
+    <bean id="failureHandler" class="org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler">
+        <property name="defaultFailureUrl" value="/login" />
+    </bean>
+    
+    <!-- 登录成功后，把当前登录客户信息放入到session中，便于前端界面获取 -->
+    <bean id="successHandler" class="com.tonggu.security.LoginSuccessHandler">
+        <property name="targetUrlParameter" value="next"/>
+        <property name="defaultTargetUrl" value="/index"/>
+    </bean>
+    	
+    <security:authentication-manager alias="authenticationManager">
+        <security:authentication-provider user-service-ref="webUserDetailsService">
+            <security:password-encoder ref="passwordEncoder" />
+        </security:authentication-provider>
+    </security:authentication-manager>
+
+    <bean id="authenticationFilter"  class="org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter" >
+		<property name="postOnly" value="false"/>
+		<property name="authenticationManager" ref="authenticationManager"/>
+	</bean>
+	
+	<bean name="securityUrlProvider" class="com.tonggu.security.SecurityUrlProvider" init-method="init" lazy-init="false" />
+
+    <bean id="logoutSuccessHandler" class="com.tonggu.security.LogoutSuccessHandler" >
+    	<property name="targetUrlParameter" value="next"/>
+        <property name="defaultTargetUrl" value="/login"/>
+    </bean>
+
+    <!-- 用户登录时，输入密码不进行加密处理，由后台进行验证 -->
+    <bean id="passwordEncoder" class="com.tonggu.security.WebPasswordEncoder" />
+
+    <!-- 权限认证事件监听器 -->
+    <bean id="authenticationListener" class="org.springframework.security.authentication.event.LoggerListener" />
+    <bean id="authorizationListener" class="org.springframework.security.access.event.LoggerListener" />
+    <bean id="alwaysSaveRequestCache" class="com.tonggu.security.AlwaysSaveRequestCache"></bean>
+    <!-- csrf过滤 -->
+    <bean id="csrfSecurityRequestMatcher" class="com.tonggu.security.CsrfSecurityRequestMatcher">
+         <property name="execludeUrls">
+             <list>
+             	<value>/loginPost</value>
+             	<!-- 调用logout的时候不需要csrf -->
+                <value>/logout</value>
+             </list>
+         </property>
+    </bean>
+</beans>

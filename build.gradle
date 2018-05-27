@@ -1,0 +1,81 @@
+buildscript {
+	ext {
+		springBootVersion = '1.3.0.RELEASE'
+	}
+	repositories {
+	    mavenCentral()
+//		mavenLocal()
+//		maven {
+//			url "http://192.16.150.201:8081/nexus/content/groups/public/"
+//		}
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}") 
+	}
+}
+
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'war'
+apply plugin: 'eclipse-wtp'
+apply plugin: 'spring-boot' 
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'application'
+
+war {
+	baseName = 'jf'
+	version = '1.0.1'
+}
+
+mainClassName = 'com.jinfeng.com.ZxsApplication'
+applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
+eclipse {
+	classpath {
+		 containers.remove('org.eclipse.jdt.launching.JRE_CONTAINER')
+		 containers 'org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8'
+	}
+}
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+repositories {
+	mavenCentral()
+}
+
+ext {
+		springBootVersion = '1.3.0.RELEASE'
+	}
+
+dependencies {
+    compile "com.google.guava:guava:17.0"
+    compile "org.apache.commons:commons-lang3:3.1"	
+    compile "org.projectlombok:lombok:1.14.8"
+	compile 'opensymphony:sitemesh:2.4.2'
+	compile('org.springframework.boot:spring-boot-starter')
+	compile("org.springframework.boot:spring-boot-starter-actuator")
+	compile("org.springframework.boot:spring-boot-starter-aop")
+	compile("org.springframework.boot:spring-boot-starter-web")
+	compile("org.springframework.boot:spring-boot-starter-security")
+	compile("org.springframework.boot:spring-boot-starter-hateoas")
+	compile("org.springframework.boot:spring-boot-starter-data-jpa")
+	compile("org.springframework.boot:spring-boot-starter-redis")
+	compile("org.springframework.boot:spring-boot-starter-amqp")
+	compile("org.springframework.boot:spring-boot-starter-parent:1.3.0.RELEASE")
+	compile "com.fasterxml.jackson.datatype:jackson-datatype-joda:2.4.6"
+	compile "mysql:mysql-connector-java"
+	compile "javax.servlet:jstl:1.2"
+	compile("org.springframework.session:spring-session:1.0.1.RELEASE")
+	compile("org.springframework.security:spring-security-taglibs")
+	compile("commons-beanutils:commons-beanutils:1.9.2")
+	testCompile('org.springframework.boot:spring-boot-starter-test')
+	testCompile "org.lazyluke:log4jdbc-remix:0.2.7"
+	runtime "org.lazyluke:log4jdbc-remix:0.2.7"
+	
+	providedCompile ("org.apache.tomcat.embed:tomcat-embed-jasper")
+    providedRuntime("org.springframework.boot:spring-boot-starter-tomcat") 
+}
+
+
+

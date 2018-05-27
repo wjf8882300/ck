@@ -1,0 +1,24 @@
+@CHARSET "UTF-8";
+
+.ckhide {
+	display:none;
+}
+
+.ckshow {
+	display:block;
+}
+
+.page-content {
+  background-color: #ffffff;
+  position: relative;
+  margin: 0;
+  padding: 8px 20px 24px;
+}
+
+.m-b-md {
+    margin-bottom: 10px;
+}
+
+.mylayout {
+	background-color: #ffffff;
+}
